@@ -1,0 +1,16 @@
+{
+  "name": "supreme-sumi",
+  "version": "1.0.0",
+  "description": "Sumi in last version of discord.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "Potter00",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.8.0",
+    "nodemon": "^2.0.22"
+  }
+}
