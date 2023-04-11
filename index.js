@@ -57,7 +57,6 @@ client.on('messageCreate', message => {
 			.catch(err => {
 				console.error(err.message);
 				if (err.message === 'Expected \'BaseGuildVoiceChannel\' for \'voiceChannel\', but got null (object)') {
-					message.channel.send('Tienes que estar en un canal, si no, no trabajo ^w^')
 				}
 			});
 	}
