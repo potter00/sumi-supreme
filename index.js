@@ -3,14 +3,14 @@ const { DisTube, Queue, QueueManager } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { SpotifyPlugin } = require('@distube/spotify');
 const client = new Discord.Client({
-	intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages',"MessageContent"],
+	intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', "MessageContent"],
 });
 const config = require("./config.json");
-
+const responses = require("./commands.json");
 const distube = new DisTube(client, {
 	searchSongs: 5,
 	searchCooldown: 30,
-	leaveOnEmpty: false,
+	leaveOnEmpty: true,
 	leaveOnFinish: false,
 	leaveOnStop: false,
 });
@@ -19,73 +19,78 @@ client.on('ready', client => {
 	console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('messageCreate', message =>{
-    
-    if (message.author.bot || !message.inGuild()) return;
-    const args = message.content.split(' ');
-    if (args[0].toLowerCase === !config.prefix) return;
+client.on('messageCreate', message => {
 	
-	const command = args[1];
-    args.shift();
-    args.shift();
-    
-   
- 
+	for (const key in responses) {
+		if (message.content.toLowerCase() === key) {
+			message.channel.send(responses[key])
+		}
+		
+	}
+	if (message.author.bot || !message.inGuild()) return;
+	const args = message.content.split(' ');
+	if (args[0].toLowerCase === !config.prefix) return;
 
-    
+	const command = args[1].toLowerCase();
+	args.shift();
+	args.shift();
 
-    if (command === 'pon'){
-	distube
-		.play(message.member.voice.channel, args.join(' '), {
-			message,
-			textChannel: message.channel,
-			member: message.member,
-		})
-		.catch(err => {
-			console.error(err.message);
-            if (err.message === 'Expected \'BaseGuildVoiceChannel\' for \'voiceChannel\', but got null (object)') {
-                message.channel.send('Tienes que estar en un canal, si no, no trabajo ^w^')
-            }
-		});
-    }
-    if (['repeat', 'loop'].includes(command)) {
+
+
+
+
+
+	if (command === 'pon' || 'play') {
+		distube
+			.play(message.member.voice.channel, args.join(' '), {
+				message,
+				textChannel: message.channel,
+				member: message.member,
+			})
+			.catch(err => {
+				console.error(err.message);
+				if (err.message === 'Expected \'BaseGuildVoiceChannel\' for \'voiceChannel\', but got null (object)') {
+					message.channel.send('Tienes que estar en un canal, si no, no trabajo ^w^')
+				}
+			});
+	}
+	if (['repeat', 'loop'].includes(command)) {
 		const mode = distube.setRepeatMode(message);
 		message.channel.send(
-			`Set repeat mode to \`${
-				mode
-					? mode === 2
-						? 'All Queue'
-						: 'This Song'
-					: 'Off'
+			`Modo loop \`${mode
+				? mode === 2
+					? 'All Queue'
+					: 'This Song'
+				: 'Off'
 			}\``,
 		);
 	}
 
-    if (command === 'para') {
+	if (command === 'para' || command === 'stop') {
 		distube.stop(message);
 		message.channel.send('Pare!');
 	}
 
-    if (command === 'sal') {
+	if (command === 'sal' || command === 'leave') {
 		distube.voices.get(message)?.leave();
 		message.channel.send('Ya me voy pues');
 	}
-    if (command === 'resume') distube.resume(message);
+	if (command === 'resume' || command === 'sigue') distube.resume(message);
 
-	if (command === 'pause') distube.pause(message);
+	if (command === 'pause' || command === 'pausa' || command === 'espera') distube.pause(message);
 
-	if (command === 'skip'){
-        const queue = distube.getQueue(message);
-        console.log(queue.songs.length);
-        if (queue.songs.length == 1) {
-            distube.voices.get(message)?.leave();
-		
-        }else{
-            distube.skip(message);
-        }
-    }
+	if (command === 'skip' || command === 'siguente') {
+		const queue = distube.getQueue(message);
+		console.log(queue.songs.length);
+		if (queue.songs.length == 1) {
+			distube.voices.get(message)?.leave();
 
-    if (command === 'queue') {
+		} else {
+			distube.skip(message);
+		}
+	}
+
+	if (command === 'queue'|| command === 'lista') {
 		const queue = distube.getQueue(message);
 		if (!queue) {
 			message.channel.send('No hay nada wey');
@@ -94,8 +99,7 @@ client.on('messageCreate', message =>{
 				`Lista actual:\n${queue.songs
 					.map(
 						(song, id) =>
-							`**${id ? id : 'Reproduciendo'}**. ${
-								song.name
+							`**${id ? id : 'Reproduciendo'}**. ${song.name
 							} - \`${song.formattedDuration}\``,
 					)
 					.slice(0, 10)
@@ -104,7 +108,7 @@ client.on('messageCreate', message =>{
 		}
 	}
 
-    if (
+	if (
 		[
 			'3d',
 			'bassboost',
@@ -124,21 +128,18 @@ client.on('messageCreate', message =>{
 
 });
 const status = queue =>
-	`Volume: \`${queue.volume}%\` | Filter: \`${
-		'Off'
-	}\` | Loop: \`${
-		queue.repeatMode
-			? queue.repeatMode === 2
-				? 'All Queue'
-				: 'This Song'
-			: 'Off'
+	`Volume: \`${queue.volume}%\` | Filter: \`${'Off'
+	}\` | Loop: \`${queue.repeatMode
+		? queue.repeatMode === 2
+			? 'All Queue'
+			: 'This Song'
+		: 'Off'
 	}\` | Autoplay: \`${queue.autoplay ? 'On' : 'Off'}\``;
 
-    distube
+distube
 	.on('playSong', (queue, song) =>
 		queue.textChannel?.send(
-			`Reproduciendo \`${song.name}\` - \`${
-				song.formattedDuration
+			`Reproduciendo \`${song.name}\` - \`${song.formattedDuration
 			}\`\nPedida por: ${song.user}\n${status(queue)}`,
 		),
 	)
@@ -149,8 +150,7 @@ const status = queue =>
 	)
 	.on('addList', (queue, playlist) =>
 		queue.textChannel?.send(
-			`Añadi \`${playlist.name}\` esa lista (${
-				playlist.songs.length
+			`Añadi \`${playlist.name}\` esa lista (${playlist.songs.length
 			} songs) a la lista\n${status(queue)}`,
 		),
 	)
@@ -179,8 +179,7 @@ const status = queue =>
 			`**Escoje una de la lista porfi**\n${result
 				.map(
 					song =>
-						`**${++i}**. ${song.name} - \`${
-							song.formattedDuration
+						`**${++i}**. ${song.name} - \`${song.formattedDuration
 						}\``,
 				)
 				.join(
@@ -197,7 +196,7 @@ const status = queue =>
 	.on('searchNoResult', message =>
 		message.channel.send('Al chile no encontre nada'),
 	)
-	.on('searchDone', () => {});
+	.on('searchDone', () => { });
 
 
 
