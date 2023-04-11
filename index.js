@@ -229,7 +229,7 @@ distube
 		message.channel.send('Pero responde bien imbe... usuario :D'),
 	)
 	.on('searchNoResult', message =>
-		message.channel.send('Al chile no encontre nada'),
+		console.log('no encontre nada')
 	)
 	.on('searchDone', () => { });
 
