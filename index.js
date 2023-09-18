@@ -28,10 +28,11 @@ client.on('messageCreate', message => {
 		}
 
 	}
+	/*
 	if (message.author.bot || !message.inGuild()) return;
 	const args = message.content.split(' ');
 	if (args[0].toLowerCase === !config.prefix) return;
-
+	
 	const command = args[1];
 	args.shift();
 	args.shift();
@@ -39,15 +40,23 @@ client.on('messageCreate', message => {
 	console.log(command);
 
 	if (command == undefined) return;
-
+	*/
+	if (message.author.bot || !message.inGuild()) return;
+	if (!message.content.startsWith(config.prefix)) return;
+	const args = message.content
+		.slice(config.prefix.length)
+		.trim()
+		.split(/ +/g);
+	const command = args.shift();
+	
 	if (command === 'ayuda') {
-		message.channel.send('Tienes diferentes opciones para comandos solo procura poner "sumi" antes de cada uno\n**play** Es un comando para poner musica en efecto, acepto nombres y links de youtube');
+		message.channel.send('Tienes diferentes opciones para comandos solo procura poner "-" antes de cada uno\n**play** Es un comando para poner musica en efecto, acepto nombres y links de youtube');
 		message.channel.send('**para** o **stop** Como supiste? para la musica\n**sal** o **leave** En efecto me voy alv \n**pausa** o **pause** Sopresa pauso la musica');
 		message.channel.send('**resume** o **sigue** Sigo con las rolitas \n**skip** Te tengo que decir? \n**lista** te doy la lista de musica actual');
 		message.channel.send('Esto es todo por ahora dudas y sugerencias al creador porfavor, y si llego a morir favor de avisarle al creador asi me debuguea y arregla');
 		return;
 	}
-	if (command === 'pon' || 'play') {
+	if (command === 'pon' || 'play' || 'p') {
 		distube
 			.play(message.member.voice.channel, args.join(' '), {
 				message,
@@ -174,7 +183,7 @@ distube
 	.on('playSong', (queue, song) =>
 		queue.textChannel?.send(
 			`Reproduciendo \`${song.name}\` - \`${song.formattedDuration
-			}\`\nPedida por: ${song.user}\n${status(queue)}`,
+			}\`\nDisfruten c:\n${status(queue)}`,
 		),
 	)
 	.on('addSong', (queue, song) =>
@@ -196,10 +205,10 @@ distube
 	})
 	.on('finish', queue => queue.textChannel?.send('Termine toda la lista'))
 	.on('finishSong', queue =>
-		console.log('cancion finalizada')
+		console.log('finalizada')
 	)
 	.on('disconnect', queue =>
-		queue.textChannel?.send('Me desconecte banda, pasen exelente dia ^w^'),
+		console.log('Me desconecte banda, pasen exelente dia ^w^'),
 	)
 	.on('empty', queue =>
 		queue.textChannel?.send(
@@ -222,10 +231,10 @@ distube
 		);
 	})
 	.on('searchCancel', message =>
-		message.channel.send('Ya lo cancele hijo de tu... mami c:'),
+		console.log('Ya lo cancele hijo de tu... mami c:'),
 	)
 	.on('searchInvalidAnswer', message =>
-		message.channel.send('Pero responde bien imbe... usuario :D'),
+		console.log('Pero responde bien imbe... usuario :D'),
 	)
 	.on('searchNoResult', message =>
 		console.log('no encontre nada')
